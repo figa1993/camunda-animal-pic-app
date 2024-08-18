@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Image</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+<h2>Select an Image:</h2>
+<select id="imageSelection">
+    <option value="">Select...</option>
+    <option value="option1">Option 1</option>
+    <option value="option2">Option 2</option>
+    <option value="option3">Option 3</option>
+</select>
+
+<img id="selectedImage" src="" alt="Selected Image" style="display:none;">
+
+<script>
+$(document).ready(function(){
+    $('#imageSelection').change(function(){
+        var selectedOption = $(this).val();
+        $.getJSON("/get_image_url", {selection: selectedOption}, function(data){
+            $('#selectedImage').attr('src', data.imageUrl);
+            $('#selectedImage').show();
+        });
+    });
+});
+</script>
+
+</body>
+</html>
