@@ -1,0 +1,15 @@
+replicaCount: 1
+
+image:
+  repository: @TODO
+  tag: latest
+  pullPolicy: IfNotPresent
+
+postgres:
+  database: mydb
+  username: myuser
+  password: mypassword
+
+service:
+  type: ClusterIP
+  port: 80

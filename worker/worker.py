@@ -1,10 +1,12 @@
 import asyncio
 import os
+import base64
 
 from pyzeebe import ZeebeWorker,create_camunda_cloud_channel
 
 import requests
-import base64
+
+import psycopg2
 
 channel = create_camunda_cloud_channel(
         client_id=os.environ.get('ZEEBE_CLIENT_ID'),
@@ -13,6 +15,21 @@ channel = create_camunda_cloud_channel(
         region=os.environ.get('CAMUNDA_CLUSTER_REGION')
     )
 worker = ZeebeWorker(channel)
+
+database_connection = None
+
+def connect_to_database():
+    try:
+        conn = psycopg2.connect(
+            host='127.0.0.1',
+            database='images',
+            user='myuser',
+            password='mypassword'
+        )
+        print("Connected to database successfully")
+    except psycopg2.Error as e:
+        print(f"Error connecting to database: {e}")
+        exit(1)
 
 @worker.task(task_type="fetchAndStorePic")
 async def fetch_and_store_picture(animalType : str):
@@ -41,4 +58,5 @@ async def fetch_and_store_picture(animalType : str):
 loop = asyncio.get_event_loop()
 
 if __name__ == '__main__':
+    connect_to_database()
     loop.run_until_complete(worker.work())
