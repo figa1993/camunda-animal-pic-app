@@ -7,12 +7,12 @@
 </head>
 <body>
 
-<h2>Select an Image:</h2>
+<h2>Select an Animal:</h2>
 <select id="imageSelection">
     <option value="">Select...</option>
-    <option value="option1">Option 1</option>
-    <option value="option2">Option 2</option>
-    <option value="option3">Option 3</option>
+    <option value="cat">Cat</option>
+    <option value="dog">Dog</option>
+    <option value="bear">Bear</option>
 </select>
 
 <img id="selectedImage" src="" alt="Selected Image" style="display:none;">
@@ -22,7 +22,10 @@ $(document).ready(function(){
     $('#imageSelection').change(function(){
         var selectedOption = $(this).val();
         $.getJSON("/get_image_url", {selection: selectedOption}, function(data){
-            $('#selectedImage').attr('src', data.imageUrl);
+            // Assuming data.imageData is the Base64 encoded image data
+            // and data.imageFormat is the format of the image (e.g., 'png', 'jpeg')
+            var imageDataURI = 'data:image/' + data.imageFormat + ';base64,' + data.imageData;
+            $('#selectedImage').attr('src', imageDataURI);
             $('#selectedImage').show();
         });
     });
