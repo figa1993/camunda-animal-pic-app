@@ -10,11 +10,10 @@ import psycopg2
 from psycopg2 import sql
 
 async def main():
-
     # Connect to the Postgres database
     try:
         conn = psycopg2.connect(
-            host='127.0.0.1',
+            host='postgres',
             database='images',
             user='myuser',
             password='mypassword'

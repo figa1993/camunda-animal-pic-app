@@ -23,9 +23,7 @@ async def get_image_url():
     process_instance_key, result = await client.run_process_with_result("Process_03kr6bi",
                                                                         variables = { 'animalType' : selection},
                                                                         timeout=5000)
-
-
     return result
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

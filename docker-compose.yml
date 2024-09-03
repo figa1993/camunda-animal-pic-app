@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: images
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+  worker:
+    image: camunda-animal-picture-worker
+    depends_on:
+      - postgres
+    environment:
+      - ZEEBE_CLIENT_ID=${ZEEBE_CLIENT_ID}
+      - ZEEBE_CLIENT_SECRET=${ZEEBE_CLIENT_SECRET}
+      - CAMUNDA_CLUSTER_ID=${CAMUNDA_CLUSTER_ID}
+      - CAMUNDA_CLUSTER_REGION=${CAMUNDA_CLUSTER_REGION}
+
+  client:
+    image: camunda-animal-picture-client
+    environment:
+      - ZEEBE_CLIENT_ID=${ZEEBE_CLIENT_ID}
+      - ZEEBE_CLIENT_SECRET=${ZEEBE_CLIENT_SECRET}
+      - CAMUNDA_CLUSTER_ID=${CAMUNDA_CLUSTER_ID}
+      - CAMUNDA_CLUSTER_REGION=${CAMUNDA_CLUSTER_REGION}
+    ports:
+      - "5000:5000"
+
+volumes:
+  postgres_data:
