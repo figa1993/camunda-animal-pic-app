@@ -24,12 +24,8 @@ async def get_image_url():
                                                                         variables = { 'animalType' : selection},
                                                                         timeout=5000)
 
-    # return jsonify({'imageUrl': images_db.get(selection, '')})
 
     return result
 
 if __name__ == '__main__':
     app.run(debug=True)
-    # channel = create_insecure_channel(hostname='localhost',port='26500') 
-    # client = ZeebeClient(channel)
-    # asyncio.run(client.deploy_process("fetch-and-store-picture.bpmn"))

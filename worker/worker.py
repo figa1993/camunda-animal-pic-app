@@ -7,18 +7,11 @@ from pyzeebe import ZeebeWorker,create_camunda_cloud_channel
 import requests
 
 import psycopg2
+from psycopg2 import sql
 
-channel = create_camunda_cloud_channel(
-        client_id=os.environ.get('ZEEBE_CLIENT_ID'),
-        client_secret=os.environ.get('ZEEBE_CLIENT_SECRET'),
-        cluster_id=os.environ.get('CAMUNDA_CLUSTER_ID'),
-        region=os.environ.get('CAMUNDA_CLUSTER_REGION')
-    )
-worker = ZeebeWorker(channel)
+async def main():
 
-database_connection = None
-
-def connect_to_database():
+    # Connect to the Postgres database
     try:
         conn = psycopg2.connect(
             host='127.0.0.1',
@@ -31,32 +24,50 @@ def connect_to_database():
         print(f"Error connecting to database: {e}")
         exit(1)
 
-@worker.task(task_type="fetchAndStorePic")
-async def fetch_and_store_picture(animalType : str):
-    print('Fetching and Storing Picture')
-    if animalType == 'cat':
-        jpeg_url = "https://placecats.com/300/200"
-    elif animalType == 'dog':
-        jpeg_url = "https://place.dog/300/200"
-    elif animalType == 'bear':
-        jpeg_url = "https://placebear.com/300/200"
-    else:
-        raise ValueError('invalid animalType provided')
-    
-    response = requests.get(jpeg_url)
-    # Check if the request was successful
-    if response.status_code == 200:
-        print('got pic successfully')
-        result = {'imageData' : base64.b64encode(response.content).decode('ascii'),
-                  'imageFormat' : 'jpeg'
-                }
-        print('Result created')
-        return result;
-    print('Failed to get picture')
-    return "Fetch and Store Picture Failed"
+    channel = create_camunda_cloud_channel(
+            client_id=os.environ.get('ZEEBE_CLIENT_ID'),
+            client_secret=os.environ.get('ZEEBE_CLIENT_SECRET'),
+            cluster_id=os.environ.get('CAMUNDA_CLUSTER_ID'),
+            region=os.environ.get('CAMUNDA_CLUSTER_REGION')
+        )
+    worker = ZeebeWorker(channel)
 
-loop = asyncio.get_event_loop()
+    @worker.task(task_type="fetchAndStorePic")
+    async def fetch_and_store_picture(animalType : str):
+        print('Fetching and Storing Picture')
+        if animalType == 'cat':
+            jpeg_url = "https://placecats.com/300/200"
+        elif animalType == 'dog':
+            jpeg_url = "https://place.dog/300/200"
+        elif animalType == 'bear':
+            jpeg_url = "https://placebear.com/300/200"
+        else:
+            raise ValueError('invalid animalType provided')
+        
+        response = requests.get(jpeg_url)
+        # Check if the request was successful
+        if response.status_code == 200:
+            print('got pic successfully')
+            image_data = base64.b64encode(response.content)
+            result = {'imageData' : image_data.decode('ascii'),
+                    'imageFormat' : 'jpeg'
+                    }
+            print('Inserting result into database')
+            try:
+                cur = conn.cursor()
+                query = sql.SQL("INSERT INTO {} (image) VALUES (%s)").format(
+                    sql.Identifier('images')
+                )
+                cur.execute(query, (psycopg2.Binary(image_data),))
+                conn.commit()
+                print("Image inserted successfully")
+            except psycopg2.Error as e:
+                print(f"Error inserting image: {e}")            
+            return result
+        print('Failed to get picture')
+        return "Fetch and Store Picture Failed"
 
-if __name__ == '__main__':
-    connect_to_database()
-    loop.run_until_complete(worker.work())
+    while True:
+        await worker.work()
+
+asyncio.run(main())
