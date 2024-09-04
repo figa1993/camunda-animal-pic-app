@@ -9,8 +9,8 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-@app.route('/get_image_url', methods=['GET'])
-async def get_image_url():
+@app.route('/image', methods=['GET'])
+async def get_image():
     selection = request.args.get('selection')
 
     channel = create_camunda_cloud_channel(

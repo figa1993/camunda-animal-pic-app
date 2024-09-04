@@ -21,7 +21,7 @@
 $(document).ready(function(){
     $('#imageSelection').change(function(){
         var selectedOption = $(this).val();
-        $.getJSON("/get_image_url", {selection: selectedOption}, function(data){
+        $.getJSON("/image", {selection: selectedOption}, function(data){
             // Assuming data.imageData is the Base64 encoded image data
             // and data.imageFormat is the format of the image (e.g., 'png', 'jpeg')
             var imageDataURI = 'data:image/' + data.imageFormat + ';base64,' + data.imageData;
